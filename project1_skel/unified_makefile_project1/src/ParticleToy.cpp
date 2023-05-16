@@ -11,22 +11,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glut.h>
+#include <string>
 
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt );
+extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, float dt );
+extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, int scenarioId);
 
 /* global variables */
-
+static int scenarioId;
 static int N;
 static float dt, d;
 static int dsim;
 static int dump_frames;
 static int frame_number;
+static int update_number;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
+static std::vector<Force*> fVector;
 
 static int win_id;
 static int win_x, win_y;
@@ -36,10 +40,6 @@ static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
 
-static SpringForce * delete_this_dummy_spring = NULL;
-static RodConstraint * delete_this_dummy_rod = NULL;
-static CircularWireConstraint * delete_this_dummy_wire = NULL;
-
 
 /*
 ----------------------------------------------------------------------
@@ -48,20 +48,21 @@ free/clear/allocate simulation data
 */
 
 static void free_data ( void )
-{
+{	
+	for (Particle *p : pVector) {
+		if (p) {
+			delete p;
+		}
+	}
+
+	for (Force *f : fVector) {
+		if (f) {
+			delete f;
+		}
+	}
+
 	pVector.clear();
-	if (delete_this_dummy_rod) {
-		delete delete_this_dummy_rod;
-		delete_this_dummy_rod = NULL;
-	}
-	if (delete_this_dummy_spring) {
-		delete delete_this_dummy_spring;
-		delete_this_dummy_spring = NULL;
-	}
-	if (delete_this_dummy_wire) {
-		delete delete_this_dummy_wire;
-		delete_this_dummy_wire = NULL;
-	}
+	fVector.clear();
 }
 
 static void clear_data ( void )
@@ -75,22 +76,7 @@ static void clear_data ( void )
 
 static void init_system(void)
 {
-	const double dist = 0.2;
-	const Vec2f center(0.0, 0.0);
-	const Vec2f offset(dist, 0.0);
-
-	// Create three particles, attach them to each other, then add a
-	// circular wire constraint to the first.
-
-	pVector.push_back(new Particle(center + offset));
-	pVector.push_back(new Particle(center + offset + offset));
-	pVector.push_back(new Particle(center + offset + offset + offset));
-	
-	// You shoud replace these with a vector generalized forces and one of
-	// constraints...
-	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
-	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
-	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
+	initScenario(pVector, fVector, scenarioId);
 }
 
 /*
@@ -137,28 +123,23 @@ static void post_display ( void )
 
 static void draw_particles ( void )
 {
-	int size = pVector.size();
-
-	for(int ii=0; ii< size; ii++)
+	for(Particle *p : pVector)
 	{
-		pVector[ii]->draw();
+		p->draw();
 	}
 }
 
 static void draw_forces ( void )
 {
-	// change this to iteration over full set
-	if (delete_this_dummy_spring)
-		delete_this_dummy_spring->draw();
+	for(Force *f : fVector)
+	{
+		f->draw();
+	}
 }
 
 static void draw_constraints ( void )
 {
-	// change this to iteration over full set
-	if (delete_this_dummy_rod)
-		delete_this_dummy_rod->draw();
-	if (delete_this_dummy_wire)
-		delete_this_dummy_wire->draw();
+
 }
 
 /*
@@ -170,9 +151,10 @@ relates mouse movements to particle toy construction
 static void get_from_UI ()
 {
 	int i, j;
-	// int size, flag;
+	int size, flag;
 	int hi, hj;
 	// float x, y;
+	//Return if 
 	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
@@ -182,16 +164,21 @@ static void get_from_UI ()
 	if ( i<1 || i>N || j<1 || j>N ) return;
 
 	if ( mouse_down[0] ) {
-
+		
 	}
 
+
 	if ( mouse_down[2] ) {
+	
 	}
 
 	hi = (int)((       hmx /(float)win_x)*N);
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
+		printf("%d, %d\n", i, j);
+		printf("%d, %d\n", hi, hj);
+		mouse_release[0] = 0;
 	}
 
 	omx = mx;
@@ -216,27 +203,33 @@ GLUT callback routines
 
 static void key_func ( unsigned char key, int x, int y )
 {
-	switch ( key )
-	{
-	case 'c':
-	case 'C':
-		clear_data ();
-		break;
-
-	case 'd':
-	case 'D':
-		dump_frames = !dump_frames;
-		break;
-
-	case 'q':
-	case 'Q':
+	try {
+		scenarioId = std::stoi(std::string() + ((char)key));
 		free_data ();
-		exit ( 0 );
-		break;
+		init_system();
+	} catch (const std::invalid_argument &ex) {
+		switch ( key )
+		{
+		case 'c':
+		case 'C':
+			clear_data ();
+			break;
 
-	case ' ':
-		dsim = !dsim;
-		break;
+		case 'd':
+		case 'D':
+			dump_frames = !dump_frames;
+			break;
+
+		case 'q':
+		case 'Q':
+			free_data ();
+			exit ( 0 );
+			break;
+
+		case ' ':
+			dsim = !dsim;
+			break;
+		}
 	}
 }
 
@@ -244,11 +237,13 @@ static void mouse_func ( int button, int state, int x, int y )
 {
 	omx = mx = x;
 	omx = my = y;
-
+	//Not left mouse down, set hmx, hmy
 	if(!mouse_down[0]){hmx=x; hmy=y;}
+	//set down/release/shiftclick to state of this button press
 	if(mouse_down[button]) mouse_release[button] = state == GLUT_UP;
 	if(mouse_down[button]) mouse_shiftclick[button] = glutGetModifiers()==GLUT_ACTIVE_SHIFT;
 	mouse_down[button] = state == GLUT_DOWN;
+	printf("%d\n", mouse_down[button]);
 }
 
 static void motion_func ( int x, int y )
@@ -268,11 +263,25 @@ static void reshape_func ( int width, int height )
 
 static void idle_func ( void )
 {
-	if ( dsim ) simulation_step( pVector, dt );
-	else        {get_from_UI();remap_GUI();}
+	if ( dsim ) {
+
+	} else {
+		//get_from_UI();remap_GUI();
+	}
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
+}
+
+static void update_func(int state) {
+	if (dsim) {
+		simulation_step( pVector, fVector, dt );
+		update_number++;
+
+		std::cout << "Update: " << update_number << "\r" << std::flush;
+	}
+
+	glutTimerFunc((int)(1000.f * dt), update_func, 0);
 }
 
 static void display_func ( void )
@@ -318,6 +327,8 @@ static void open_glut_window ( void )
 	glutReshapeFunc ( reshape_func );
 	glutIdleFunc ( idle_func );
 	glutDisplayFunc ( display_func );
+
+	glutTimerFunc((int)(1000.f * dt), update_func, 0);
 }
 
 
@@ -345,12 +356,15 @@ int main ( int argc, char ** argv )
 
 	printf ( "\n\nHow to use this application:\n\n" );
 	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
+	printf ( "\t Press frames by pressing the 'd' key\n" );
+	printf ( "\t Dump frames by pressing the 'd' key\n" );
 	printf ( "\t Dump frames by pressing the 'd' key\n" );
 	printf ( "\t Quit by pressing the 'q' key\n" );
 
 	dsim = 0;
 	dump_frames = 0;
 	frame_number = 0;
+	update_number = 0;
 	
 	init_system();
 	

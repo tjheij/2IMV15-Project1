@@ -1,10 +1,13 @@
 #pragma once
 
+#include "Force.h"
 #include "Particle.h"
 
-class SpringForce {
+class SpringForce : public Force {
  public:
   SpringForce(Particle *p1, Particle * p2, double dist, double ks, double kd);
+
+  void apply_force();
 
   void draw();
 
