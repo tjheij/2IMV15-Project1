@@ -11,10 +11,10 @@ void SpringForce::apply_force()
   Vec2f delta_x = m_p1->m_Position - m_p2->m_Position;
   Vec2f delta_v = m_p1->m_Velocity - m_p2->m_Velocity;
 
-  Vec2f stiffnessPart = m_ks * (norm2(delta_x) - m_dist);
-  Vec2f dampingPart = m_kd * (delta_v * delta_x) / norm2(delta_x);
+  Vec2f stiffnessPart = m_ks * (norm(delta_x) - m_dist);
+  Vec2f dampingPart = m_kd * (delta_v * delta_x) / norm(delta_x);
 
-  Vec2f f1 = -(stiffnessPart + dampingPart) * (delta_x / norm2(delta_x));
+  Vec2f f1 = -(stiffnessPart + dampingPart) * (delta_x / norm(delta_x));
   Vec2f f2 = -f1;
 
   m_p1->m_Force += f1;

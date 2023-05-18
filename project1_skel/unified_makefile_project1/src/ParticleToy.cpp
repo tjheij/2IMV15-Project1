@@ -205,7 +205,7 @@ static void key_func ( unsigned char key, int x, int y )
 {
 	try {
 		scenarioId = std::stoi(std::string() + ((char)key));
-		free_data ();
+		free_data();
 		init_system();
 	} catch (const std::invalid_argument &ex) {
 		switch ( key )
@@ -344,7 +344,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		N = 64;
-		dt = 0.1f;
+		dt = 0.025f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );

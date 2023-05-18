@@ -14,10 +14,10 @@ void scenarioSpring(std::vector<Particle*> &particles, std::vector<Force*> &forc
 	const Vec2f center(0.0, 0.0);
 	const Vec2f offset(dist, 0.0);
     
-	particles.push_back(new Particle(center));
-	particles.push_back(new Particle(center + offset));
+	particles.push_back(new Particle(center, 1.f));
+	particles.push_back(new Particle(center + offset, 1.f));
 
-    forces.push_back(new SpringForce(particles[0], particles[1], restDist, 1.0f, 0.0f));
+    forces.push_back(new SpringForce(particles[0], particles[1], restDist, 1.f, 0.1f));
 }
 
 void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &forces) {
@@ -28,9 +28,9 @@ void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &for
 	// Create three particles, attach them to each other, then add a
 	// circular wire constraint to the first.
 
-	particles.push_back(new Particle(center + offset));
-	particles.push_back(new Particle(center + offset + offset));
-	particles.push_back(new Particle(center + offset + offset + offset));
+	particles.push_back(new Particle(center + offset, 1.f));
+	particles.push_back(new Particle(center + offset + offset, 1.f));
+	particles.push_back(new Particle(center + offset + offset + offset, 1.f));
 
     //Add gravity
 	for(Particle* p : particles){
@@ -43,7 +43,9 @@ void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces
     switch (scenarioId) {
         case 0:
             scenarioGravity(particles, forces);
+			break;
 		case 1:
-			scenarioSpring(particles, forces);	
+			scenarioSpring(particles, forces);
+			break;	
     }
 }
