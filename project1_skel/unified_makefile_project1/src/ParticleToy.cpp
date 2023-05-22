@@ -16,8 +16,8 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, float dt, int scheme );
-extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, int scenarioId, bool hold);
+extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt);
+extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId);
 
 /* global variables */
 static int scenarioId;
@@ -32,6 +32,7 @@ static int update_number;
 // static Particle *pList;
 static std::vector<Particle*> pVector;
 static std::vector<Force*> fVector;
+static std::vector<Constraint*> cVector;
 
 static int win_id;
 static int win_x, win_y;
@@ -62,8 +63,15 @@ static void free_data ( void )
 		}
 	}
 
+	for (Constraint *c : cVector) {
+		if (c) {
+			delete c;
+		}
+	}
+
 	pVector.clear();
 	fVector.clear();
+	cVector.clear();
 }
 
 static void clear_data ( void )
@@ -83,7 +91,7 @@ static void init_system(void)
 	} else {
 		mouseParticle = NULL;
 	}
-	initScenario(pVector, fVector, scenarioId, mouse_down[0]);
+	initScenario(pVector, fVector, cVector, scenarioId);
 }
 
 /*
@@ -146,7 +154,10 @@ static void draw_forces ( void )
 
 static void draw_constraints ( void )
 {
-
+	for(Constraint *c : cVector)
+	{
+		c->draw();
+	}
 }
 
 /*
@@ -318,7 +329,7 @@ static void idle_func ( void )
 
 static void update_func(int state) {
 	if (dsim) {
-		simulation_step( pVector, fVector, dt, scheme );
+		simulation_step( pVector, fVector, cVector, dt );
 		update_number++;
 
 		//std::cout << "Update: " << update_number << "\r" << std::flush;

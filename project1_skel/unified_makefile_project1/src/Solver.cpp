@@ -1,5 +1,6 @@
 #include "Particle.h"
 #include "Force.h"
+#include "Constraint.h"
 #include <vector>
 
 void clear_forces(std::vector<Particle*> &pVector) {
@@ -11,6 +12,12 @@ void clear_forces(std::vector<Particle*> &pVector) {
 void calculate_forces( std::vector<Force*> &fVector) {
 	for (Force* f : fVector) {
 		f->apply_force();
+	}
+}
+
+void calculate_constraint_forces(std::vector<Constraint*> &cVector) {
+	for (Constraint* c : cVector) {
+		c->apply_constraint_force();
 	}
 }
 
@@ -92,9 +99,10 @@ void integrate(std::vector<Particle*> &pVector, float dt, int scheme) {
 	
 }
 
-void simulation_step(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, float dt, int scheme) {
+void simulation_step(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	integrate(pVector, dt, scheme);
+	calculate_constraint_forces(cVector);
+	integrate(pVector, dt);
 }
 
