@@ -165,6 +165,9 @@ static void draw_constraints ( void )
 relates mouse movements to particle toy construction
 ----------------------------------------------------------------------
 */
+// create a function that makes the mouse particle follow the mouse
+
+
 void mouse_interact(){
 	int i, j;
 	int size, flag;
@@ -173,22 +176,23 @@ void mouse_interact(){
 	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
 	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
-	i = (int)((       mx /(float)win_x)*N+1);
-	j = (int)(((win_y-my)/(float)win_y)*N+1);
+	i = (int)((       (mx) /(float)win_x)*N);
+	j = (int)(((win_y-my)/(float)win_y)*N);
 
 	if ( i<1 || i>N || j<1 || j>N ) return;
 
-	x = ((float) i / N);
-	y = ((float) j / N);
+	x = ((float) i / N)-0.5f;
+	y = ((float) j / N)-0.5f;
 
 	if ( mouse_down[0] && scenarioId == 1 ) {
 		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
+		//mouseParticle->set_state(Vec2f( (float)(mx-win_x/2)/win_x,(float)(win_y/2-my)/win_y),Vec2f(0,0));
 	}
 	// if ( mouse_release[0] && scenarioId == 1 ) {
 	// 	mouseParticle->reset();
 	// 	printf("%d", mouseParticle->m_Position[0]);
 	// }
-	//printf("mouse position is %d,%d", x,y);
+	printf("mouse position is %d,%d", x,y);
 	//printf("partcile position is %d,%d", mouseParticle->m_Position[0], mouseParticle->m_Position[1]);
 
 }
@@ -220,7 +224,7 @@ static void get_from_UI ()
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
-		mouse_release[0] = 0;
+		//mouse_release[0] = 0;
 	}
 
 	omx = mx;

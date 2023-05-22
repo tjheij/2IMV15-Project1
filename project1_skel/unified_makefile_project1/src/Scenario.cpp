@@ -11,7 +11,7 @@
 
 
 void scenarioSpring(std::vector<Particle*> &particles, std::vector<Force*> &forces) {
-    const float restDist = 0.5f; 
+    const float restDist = 0.2f; 
     
 	const Vec2f center(0.0, 0.0);
     
