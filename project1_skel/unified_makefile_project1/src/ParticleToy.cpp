@@ -16,12 +16,12 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt);
+extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt, int scheme);
 extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId);
 
 /* global variables */
 static int scenarioId;
-static int scheme;
+static int scheme = 0;
 static int N;
 static float dt, d;
 static int dsim;
@@ -273,11 +273,11 @@ static void key_func ( unsigned char key, int x, int y )
 			break;
 		case 'm':
 		case 'M':
-			scheme = 0;
+			scheme = 1;
 			break;
 		case 'r':
 		case 'R':
-			scheme = 0;
+			scheme = 2;
 			break;
 		case ' ':
 			dsim = !dsim;
@@ -329,7 +329,7 @@ static void idle_func ( void )
 
 static void update_func(int state) {
 	if (dsim) {
-		simulation_step( pVector, fVector, cVector, dt );
+		simulation_step( pVector, fVector, cVector, dt, scheme);
 		update_number++;
 
 		//std::cout << "Update: " << update_number << "\r" << std::flush;
