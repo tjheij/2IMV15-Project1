@@ -16,11 +16,12 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, float dt );
-extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, int scenarioId);
+extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, float dt, int scheme );
+extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, int scenarioId, bool hold);
 
 /* global variables */
 static int scenarioId;
+static int scheme;
 static int N;
 static float dt, d;
 static int dsim;
@@ -40,7 +41,7 @@ static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
 
-
+Particle* mouseParticle = NULL;
 /*
 ----------------------------------------------------------------------
 free/clear/allocate simulation data
@@ -76,7 +77,13 @@ static void clear_data ( void )
 
 static void init_system(void)
 {
-	initScenario(pVector, fVector, scenarioId);
+	if (scenarioId == 1) {
+		mouseParticle = new Particle(Vec2f(omx,omy), 1.f);
+		pVector.push_back(mouseParticle);
+	} else {
+		mouseParticle = NULL;
+	}
+	initScenario(pVector, fVector, scenarioId, mouse_down[0]);
 }
 
 /*
@@ -147,7 +154,33 @@ static void draw_constraints ( void )
 relates mouse movements to particle toy construction
 ----------------------------------------------------------------------
 */
+void mouse_interact(){
+	int i, j;
+	int size, flag;
+	float x, y;
+	//Return if 
+	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
+	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
 
+	i = (int)((       mx /(float)win_x)*N+1);
+	j = (int)(((win_y-my)/(float)win_y)*N+1);
+
+	if ( i<1 || i>N || j<1 || j>N ) return;
+
+	x = ((float) i / N);
+	y = ((float) j / N);
+
+	if ( mouse_down[0] && scenarioId == 1 ) {
+		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
+	}
+	// if ( mouse_release[0] && scenarioId == 1 ) {
+	// 	mouseParticle->reset();
+	// 	printf("%d", mouseParticle->m_Position[0]);
+	// }
+	//printf("mouse position is %d,%d", x,y);
+	//printf("partcile position is %d,%d", mouseParticle->m_Position[0], mouseParticle->m_Position[1]);
+
+}
 static void get_from_UI ()
 {
 	int i, j;
@@ -176,8 +209,6 @@ static void get_from_UI ()
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
-		printf("%d, %d\n", i, j);
-		printf("%d, %d\n", hi, hj);
 		mouse_release[0] = 0;
 	}
 
@@ -225,7 +256,18 @@ static void key_func ( unsigned char key, int x, int y )
 			free_data ();
 			exit ( 0 );
 			break;
-
+		case 'e':
+		case 'E':
+			scheme = 0;
+			break;
+		case 'm':
+		case 'M':
+			scheme = 0;
+			break;
+		case 'r':
+		case 'R':
+			scheme = 0;
+			break;
 		case ' ':
 			dsim = !dsim;
 			break;
@@ -237,13 +279,14 @@ static void mouse_func ( int button, int state, int x, int y )
 {
 	omx = mx = x;
 	omx = my = y;
+	
 	//Not left mouse down, set hmx, hmy
 	if(!mouse_down[0]){hmx=x; hmy=y;}
 	//set down/release/shiftclick to state of this button press
 	if(mouse_down[button]) mouse_release[button] = state == GLUT_UP;
 	if(mouse_down[button]) mouse_shiftclick[button] = glutGetModifiers()==GLUT_ACTIVE_SHIFT;
 	mouse_down[button] = state == GLUT_DOWN;
-	printf("%d\n", mouse_down[button]);
+	//printf("%d\n", mouse_down[button]);
 }
 
 static void motion_func ( int x, int y )
@@ -264,9 +307,9 @@ static void reshape_func ( int width, int height )
 static void idle_func ( void )
 {
 	if ( dsim ) {
-
+		mouse_interact();
 	} else {
-		//get_from_UI();remap_GUI();
+		get_from_UI(); //remap_GUI();
 	}
 
 	glutSetWindow ( win_id );
@@ -275,10 +318,10 @@ static void idle_func ( void )
 
 static void update_func(int state) {
 	if (dsim) {
-		simulation_step( pVector, fVector, dt );
+		simulation_step( pVector, fVector, dt, scheme );
 		update_number++;
 
-		std::cout << "Update: " << update_number << "\r" << std::flush;
+		//std::cout << "Update: " << update_number << "\r" << std::flush;
 	}
 
 	glutTimerFunc((int)(1000.f * dt), update_func, 0);
