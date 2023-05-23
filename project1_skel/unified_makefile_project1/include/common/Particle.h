@@ -10,9 +10,10 @@ public:
 	virtual ~Particle(void);
 
 	void reset();
-	void draw();
+    void set_state(Vec2f pos, Vec2f vel);
+    void draw();
 
-	Vec2f m_ConstructPos;
+    Vec2f m_ConstructPos;
 	Vec2f m_Position;
 	Vec2f m_Velocity;
 	float m_Mass;

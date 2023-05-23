@@ -11,16 +11,14 @@
 
 
 void scenarioSpring(std::vector<Particle*> &particles, std::vector<Force*> &forces) {
-    const float dist = 0.3f;
     const float restDist = 0.2f; 
     
 	const Vec2f center(0.0, 0.0);
-	const Vec2f offset(dist, 0.0);
     
 	particles.push_back(new Particle(center, 1.f));
-	particles.push_back(new Particle(center + offset, 1.f));
+	//particles.push_back(new Particle(center + offset, 1.f));
 
-    forces.push_back(new SpringForce(particles[0], particles[1], restDist, 1.f, 0.1f));
+	forces.push_back(new SpringForce(particles[0], particles[1], restDist, 1.f, 0.1f));
 }
 
 void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &forces) {
