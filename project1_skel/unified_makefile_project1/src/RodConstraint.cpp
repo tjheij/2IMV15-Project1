@@ -13,7 +13,7 @@ void RodConstraint::apply_single_constraint(Particle *p1, Particle *p2, double d
 	float stiffnessPart = m_ks * dist*(position * position - 1);
 	float dampingPart = m_kd * (position * velocity);
 	
-	float lambda = ((-forces) * position - p1->m_Mass * (velocity * velocity + dampingPart)) / (position * position);
+	float lambda = ((-forces) * position - p1->m_Mass * (velocity * velocity + stiffnessPart + dampingPart)) / (position * position);
 	Vec2f constraint_force = lambda * position;
 	p1->m_Force += constraint_force;
 }

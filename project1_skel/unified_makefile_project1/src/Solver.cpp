@@ -15,9 +15,41 @@ extern void calculate_forces( std::vector<Force*> &fVector) {
 	}
 }
 
-void calculate_constraint_forces(std::vector<Constraint*> &cVector) {
-	for (Constraint* c : cVector) {
-		c->apply_constraint_force();
+void calculate_constraint_forces(std::vector<Particle*> &pVector, std::vector<Constraint*> &cVector) {
+	int m = cVector.size();
+	int n = pVector.size();
+
+	double C[m] = {0};
+	double C_prime[m] = {0};
+	double J[m][n] = {0};
+
+	for (int i = 0; i < m; i++) {
+		//Get c, c', J, J'
+		C[i] = cVector[i]->eval_C();
+		C_prime[i] = cVector[i]->eval_C_prime();
+		cVector[i]->compute_matrix_blocks();
+	}
+
+	for (matrix_block block : constraints_J){
+		block.i
+	}
+
+	//Calculate lhs matrix
+	implicitMatrixWithTrans JWJ_T;
+
+	//Calculate rhs vector
+	double rhs[m];
+
+	//Linsolve lambda
+	double lambda[m];
+	ConjGrad(m, JWJ_T, lambda, rhs);
+
+	//Calculate new forces
+	double Q[n] = {0}; //J_T * lambda
+
+	//Add forces
+	for(int i = 0; i < n; i++){
+		pVector[i]->m_Force += Q[i];
 	}
 }
 
