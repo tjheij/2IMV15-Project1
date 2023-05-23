@@ -192,7 +192,7 @@ void mouse_interact(){
 	// 	mouseParticle->reset();
 	// 	printf("%d", mouseParticle->m_Position[0]);
 	// }
-	printf("mouse position is %d,%d", x,y);
+	//printf("mouse position is %d,%d", x,y);
 	//printf("partcile position is %d,%d", mouseParticle->m_Position[0], mouseParticle->m_Position[1]);
 
 }
