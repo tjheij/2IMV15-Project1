@@ -2,6 +2,67 @@
 
 // vector helper functions
 
+std::size_t getIndex(std::size_t i, std::size_t j, std::size_t n) {
+    return i * n + j;
+}
+
+double SparseMatrix::get(std::size_t i, std::size_t j) {
+    std::size_t index = getIndex(i, j, m_N);
+
+    if (m_Elements.count(index)) {
+        return m_Elements[index];
+    } else {
+        return 0.0;
+    }
+}
+
+void SparseMatrix::set(std::size_t i, std::size_t j, double value) {
+    std::size_t index = getIndex(i, j, m_N);
+
+    if (value == 0.0) {
+        m_Elements.erase(index);
+        m_PerRow_ColumnIndices[i].erase(j);
+        m_PerColumn_RowIndices[j].erase(i);
+    } else {
+        m_Elements[index] = value;
+        m_PerRow_ColumnIndices[i].insert(j);
+        m_PerColumn_RowIndices[j].insert(i);
+    }
+}
+
+SparseMatrix::SparseMatrix(std::size_t N) : m_N(N) {
+    for (std::size_t i = 0; i < N; i++) {
+        m_PerRow_ColumnIndices.push_back(std::set<std::size_t>());
+        m_PerColumn_RowIndices.push_back(std::set<std::size_t>());
+    }
+}
+
+void SparseMatrix::matVecMult(double x[], double r[]) {
+    for (std::size_t i = 0; i < m_N; i++) {
+        r[i] = 0;
+    }
+
+    for (std::size_t i = 0; i < m_N; i++) {
+        for (std::size_t j : m_PerRow_ColumnIndices[i]) {
+            std::size_t index = getIndex(i, j, m_N);
+            r[i] += m_Elements[index] * x[j];
+        }
+    }
+}
+
+void SparseMatrix::matTransVecMult(double x[], double r[]) {
+    for (std::size_t i = 0; i < m_N; i++) {
+        r[i] = 0;
+    }
+
+    for (std::size_t j = 0; j < m_N; j++) {
+        for (std::size_t i : m_PerColumn_RowIndices[j]) {
+            std::size_t index = getIndex(j, i, m_N);
+            r[i] += m_Elements[index] * x[j];
+        }
+    }
+}
+
 void vecAddEqual(int n, double r[], double v[])
 {
   for (int i = 0; i < n; i++)
