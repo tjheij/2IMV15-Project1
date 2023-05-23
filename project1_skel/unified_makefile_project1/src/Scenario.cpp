@@ -56,9 +56,9 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 	forces.push_back(new GravityForce(particles[1]));
 	forces.push_back(new GravityForce(particles[2]));
 
-	constraints.push_back(new CircularWireConstraint(particles[0], circle_1_offset, 0.2f, 100.0f, 1.0f));
-	constraints.push_back(new CircularWireConstraint(particles[1], circle_2_offset, 0.1f, 100.0f, 1.0f));
-	constraints.push_back(new RodConstraint(particles[0], particles[2], 0.1f, 1.0f, 1.0f));
+	constraints.push_back(new CircularWireConstraint(particles[0], 0, circle_1_offset, 0.2f));
+	constraints.push_back(new CircularWireConstraint(particles[1], 1, circle_2_offset, 0.1f));
+	constraints.push_back(new RodConstraint(particles[0], 0, particles[2], 2, 0.1f));
 }
 
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId) {

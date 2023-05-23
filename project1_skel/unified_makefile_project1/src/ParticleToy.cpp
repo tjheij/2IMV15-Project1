@@ -28,8 +28,6 @@ static int dsim;
 static int dump_frames;
 static int frame_number;
 static int update_number;
-static std::vector<matrix_block> constraints_J;
-static std::vector<matrix_block> constraints_J_prime;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -194,7 +192,7 @@ void mouse_interact(){
 	// 	mouseParticle->reset();
 	// 	printf("%d", mouseParticle->m_Position[0]);
 	// }
-	printf("mouse position is %d,%d", x,y);
+	//printf("mouse position is %d,%d", x,y);
 	//printf("partcile position is %d,%d", mouseParticle->m_Position[0], mouseParticle->m_Position[1]);
 
 }
