@@ -1,27 +1,35 @@
 #include "RodConstraint.h"
 #include <GL/glut.h>
 
-RodConstraint::RodConstraint(Particle *p1, Particle * p2, const double dist, const double ks, const double kd) :
-  m_p1(p1), m_p2(p2), m_dist(dist), m_ks(ks), m_kd(kd) {}
+RodConstraint::RodConstraint(Particle *p1, const int p1_index, Particle * p2, const int p2_index, const double dist) :
+  m_p1(p1), m_p1_index(p1_index), m_p2(p2), m_p2_index(p2_index), m_dist(dist) {}
 
-void RodConstraint::apply_single_constraint(Particle *p1, Particle *p2, double dist)
+double RodConstraint::eval_C()
 {
-  Vec2f position = (p1->m_Position - p2->m_Position)/dist;
-	Vec2f velocity = p1->m_Velocity;
-	Vec2f forces = p1->m_Force;
-
-	float stiffnessPart = m_ks * dist*(position * position - 1);
-	float dampingPart = m_kd * (position * velocity);
-	
-	float lambda = ((-forces) * position - p1->m_Mass * (velocity * velocity + dampingPart)) / (position * position);
-	Vec2f constraint_force = lambda * position;
-	p1->m_Force += constraint_force;
+	Vec2f position = (m_p1->m_Position - m_p2->m_Position)/m_dist;
+	return 0.5 * (position * position - 1);
 }
 
-void RodConstraint::apply_constraint_force()
+double RodConstraint::eval_C_prime()
 {
-  apply_single_constraint(m_p1, m_p2, m_dist);
-  apply_single_constraint(m_p2, m_p1, m_dist);
+	Vec2f position = (m_p1->m_Position - m_p2->m_Position)/m_dist;
+	return position * m_p1->m_Velocity;
+}
+
+void RodConstraint::compute_matrix_blocks(int i, SparseMatrix *J, SparseMatrix *J_prime)
+{
+  Vec2f position1 = (m_p1->m_Position - m_p2->m_Position)/m_dist;
+	J->set(i, m_p1_index*2, position1[0]);
+  J->set(i, m_p1_index*2+1, position1[1]);
+
+  Vec2f position2 = (m_p2->m_Position - m_p1->m_Position)/m_dist;
+  J->set(i, m_p2_index*2, position2[0]);
+  J->set(i, m_p2_index*2+1, position2[1]);
+
+	J_prime->set(i, m_p1_index*2, m_p1->m_Velocity[0]);
+  J_prime->set(i, m_p1_index*2+1, m_p1->m_Velocity[1]);
+  J_prime->set(i, m_p2_index*2, m_p2->m_Velocity[0]);
+  J_prime->set(i, m_p2_index*2+1, m_p2->m_Velocity[1]);
 }
 
 void RodConstraint::draw()

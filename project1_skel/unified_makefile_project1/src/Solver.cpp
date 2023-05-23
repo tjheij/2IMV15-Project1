@@ -3,6 +3,9 @@
 #include "Constraint.h"
 #include <vector>
 
+#define ks_constraints 100.0f
+#define kd_constraints 1.0f
+
 void clear_forces(std::vector<Particle*> &pVector) {
 	for (Particle* p : pVector) {
 		p->m_Force = Vec2(0.0, 0.0);
@@ -15,16 +18,71 @@ void calculate_forces( std::vector<Force*> &fVector) {
 	}
 }
 
-void calculate_constraint_forces(std::vector<Constraint*> &cVector) {
-	for (Constraint* c : cVector) {
-		c->apply_constraint_force();
+void calculate_constraint_forces(std::vector<Particle*> &pVector, std::vector<Constraint*> &cVector) {
+	int m = cVector.size();
+	int n = pVector.size() * 2; //2 dimensions per particle
+
+	double C[m] = {0};
+	double C_prime[m] = {0};
+
+	double q_prime[n] = {0};
+	double Q[n] = {0};
+
+	double W[n] = {0};
+	SparseMatrix J = SparseMatrix(m,n);
+	SparseMatrix J_prime = SparseMatrix(m,n);
+
+	for (int i = 0; i < m; i++) {
+		//Get c, c', J, J'
+		C[i] = cVector[i]->eval_C();
+		C_prime[i] = cVector[i]->eval_C_prime();
+		cVector[i]->compute_matrix_blocks(i, &J, &J_prime);
+	}
+
+	for (int i = 0; i < pVector.size(); i++) {
+		q_prime[i*2] = pVector[i]->m_Velocity[0];
+		q_prime[i*2+1] = pVector[i]->m_Velocity[1];
+		Q[i*2] = pVector[i]->m_Force[0];
+		Q[i*2+1] = pVector[i]->m_Force[1];
+		W[i*2] = W[i*2+1] = 1.0f/pVector[i]->m_Mass;
+	}
+
+	//Calculate rhs vector
+	double rhs[m] = {0};
+	double temp[m] = {0};
+	//-J'q'^T
+	J_prime.matVecMult(q_prime, temp);
+	vecDiffEqual(m, rhs, temp);
+	//-JWQ^T
+	vecTimesElementWise(n, Q, W);
+	J.matVecMult(Q, temp);
+	vecDiffEqual(m, rhs, temp);
+	//-ksC
+	vecTimesScalar(m, C, ks_constraints);
+	vecDiffEqual(m, rhs, C);
+	//-kdC'
+	vecTimesScalar(m, C_prime, kd_constraints);
+	vecDiffEqual(m, rhs, C_prime);
+
+	//Linsolve lambda
+	double lambda[m] = {0};
+	int steps = 100;
+	VectorConjGrad(m, n, &J, W, lambda, rhs, 0.001f, &steps);
+
+	//Calculate new forces
+	double Q_hat[n] = {0};
+	J.matTransVecMult(lambda, Q_hat); //J_T * lambda
+
+	//Add forces
+	for(int i = 0; i < pVector.size(); i++){
+		pVector[i]->m_Force += Vec2f(Q_hat[i*2], Q_hat[i*2+1]);
 	}
 }
 
 void eulerExplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 	for(Particle* p : pVector) {
 		p->m_Position += dt*p->m_Velocity;
 		p->m_Velocity += dt*p->m_Force / p->m_Mass; 
@@ -34,7 +92,7 @@ void eulerExplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector
 void eulerSemiImplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 	for(Particle* p : pVector) {
 		p->m_Velocity += dt*p->m_Force / p->m_Mass; 
 		p->m_Position += dt*p->m_Velocity;
@@ -54,7 +112,7 @@ void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std
 	
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 	//do first order midpoint step
 	for(Particle* p : pVector) {
 		p->m_Velocity += dt * (p->m_Force / p->m_Mass);
@@ -63,7 +121,7 @@ void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std
 
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 
 	//do second order midpoint step
 	for(int i = 0; i < pVector.size(); i++) {
@@ -101,7 +159,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 
 	//do first order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -114,7 +172,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 
 	//do second order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -127,7 +185,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 
 	//do third order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -139,7 +197,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	}
 	clear_forces(pVector);
 	calculate_forces(fVector);
-	calculate_constraint_forces(cVector);
+	calculate_constraint_forces(pVector, cVector);
 
 	//do fourth order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
