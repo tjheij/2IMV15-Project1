@@ -5,6 +5,7 @@
 #include "Force.h"
 #include "CircularWireConstraint.h"
 #include "RodConstraint.h"
+#include "LineConstraint.h"
 #include "Constraint.h"
 
 #include <iostream>
@@ -43,10 +44,10 @@ void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &for
 void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints) {
 	const Vec2f center(0.0, 0.0);
 	const Vec2f p_1_offset(0.0, 0.0);
-	const Vec2f circle_1_offset(-0.2, 0.0);
+	const Vec2f circle_1_offset(-0.25, 0.0);
 	const Vec2f p_2_offset(0.7, 0.0);
 	const Vec2f circle_2_offset(0.8, 0.0);
-	const Vec2f p_3_offset(0.1, 0.0);
+	const Vec2f p_3_offset(0.4, 0.3);
 
 	particles.push_back(new Particle(center + p_1_offset, 1.f));
 	particles.push_back(new Particle(center + p_2_offset, 1.f));
@@ -56,9 +57,10 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 	forces.push_back(new GravityForce(particles[1]));
 	forces.push_back(new GravityForce(particles[2]));
 
-	constraints.push_back(new CircularWireConstraint(particles[0], 0, circle_1_offset, 0.2f));
+	constraints.push_back(new CircularWireConstraint(particles[0], 0, circle_1_offset, 0.25f));
 	constraints.push_back(new CircularWireConstraint(particles[1], 1, circle_2_offset, 0.1f));
-	constraints.push_back(new RodConstraint(particles[0], 0, particles[2], 2, 0.1f));
+	constraints.push_back(new RodConstraint(particles[0], 0, particles[2], 2, 0.5f));
+	constraints.push_back(new LineConstraint(particles[2], 2, 0.0f, 0.3f, 1.0f));
 }
 
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId) {
