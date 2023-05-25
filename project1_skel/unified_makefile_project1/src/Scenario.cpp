@@ -6,7 +6,7 @@
 #include "CircularWireConstraint.h"
 #include "RodConstraint.h"
 #include "Constraint.h"
-
+#include "Cloth.h"
 #include <iostream>
 
 
@@ -14,9 +14,9 @@ void scenarioSpring(std::vector<Particle*> &particles, std::vector<Force*> &forc
     const float restDist = 0.2f; 
     
 	const Vec2f center(0.0, 0.0);
-    
+    const Vec2f offset(0.1,0.0);
 	particles.push_back(new Particle(center, 1.f));
-	//particles.push_back(new Particle(center + offset, 1.f));
+	particles.push_back(new Particle(center + offset, 1.f));
 
 	forces.push_back(new SpringForce(particles[0], particles[1], restDist, 1.f, 0.1f));
 }
@@ -61,6 +61,11 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 	constraints.push_back(new RodConstraint(particles[0], 0, particles[2], 2, 0.1f));
 }
 
+void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints) {
+	Cloth* cloth = new Cloth(4, 4, particles, forces, constraints);
+	cloth->init(particles, forces, constraints);
+}
+
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId) {
     switch (scenarioId) {
         case 0:
@@ -72,5 +77,8 @@ void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces
 		case 2:
 			scenarioConstraints(particles, forces, constraints);
 			break;	
+		case 3:
+			scenarioCloth(particles, forces, constraints);
+			break;
     }
 }

@@ -85,13 +85,13 @@ static void clear_data ( void )
 
 static void init_system(void)
 {
+	initScenario(pVector, fVector, cVector, scenarioId);
 	if (scenarioId == 1) {
-		mouseParticle = new Particle(Vec2f(omx,omy), 1.f);
-		pVector.push_back(mouseParticle);
+		mouseParticle = pVector[1];
+		//pVector.push_back(mouseParticle);
 	} else {
 		mouseParticle = NULL;
 	}
-	initScenario(pVector, fVector, cVector, scenarioId);
 }
 
 /*
@@ -186,9 +186,20 @@ void mouse_interact(){
 
 	if ( mouse_down[0] && scenarioId == 1 ) {
 		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
-		//mouseParticle->set_state(Vec2f( (float)(mx-win_x/2)/win_x,(float)(win_y/2-my)/win_y),Vec2f(0,0));
 	}
-	// if ( mouse_release[0] && scenarioId == 1 ) {
+	if ( mouse_down[0] && scenarioId == 3 ) {
+		//get closest particle to mouse
+		float dist = 10000.0f;
+		for (Particle* p: pVector) {
+			float new_dist = sqrt(pow(p->m_Position[0] - x, 2) + pow(p->m_Position[1] - y, 2));
+			if (new_dist < dist) {
+				dist = new_dist;
+				mouseParticle = p;
+			}
+		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
+		}
+	}
+	// if ( mouse_rel ease[0] && scenarioId == 1 ) {
 	// 	mouseParticle->reset();
 	// 	printf("%d", mouseParticle->m_Position[0]);
 	// }
