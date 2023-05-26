@@ -63,9 +63,9 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 	constraints.push_back(new LineConstraint(particles[2], 2, 0.0f, 0.3f, 1.0f));
 }
 
-void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints) {
-	Cloth* cloth = new Cloth(4, 4, particles, forces, constraints);
-	cloth->init(particles, forces, constraints);
+void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int type) {
+	Cloth* cloth = new Cloth(10, 10, particles, forces, constraints);
+	cloth->init(particles, forces, constraints, type);
 }
 
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId) {
@@ -80,7 +80,9 @@ void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces
 			scenarioConstraints(particles, forces, constraints);
 			break;	
 		case 3:
-			scenarioCloth(particles, forces, constraints);
+			scenarioCloth(particles, forces, constraints, 0);
 			break;
+		case 4:
+			scenarioCloth(particles, forces, constraints, 1);
     }
 }

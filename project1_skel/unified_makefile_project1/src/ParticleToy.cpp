@@ -43,6 +43,7 @@ static int omx, omy, mx, my;
 static int hmx, hmy;
 
 Particle* mouseParticle = NULL;
+SpringForce* mouseSpring = NULL;
 /*
 ----------------------------------------------------------------------
 free/clear/allocate simulation data
@@ -89,6 +90,10 @@ static void init_system(void)
 	if (scenarioId == 1) {
 		mouseParticle = pVector[1];
 		//pVector.push_back(mouseParticle);
+	} else if (scenarioId == 4) {
+		mouseParticle = pVector[pVector.size()-1];
+		//mouseSpring = new SpringForce(pVector[0], mouseParticle, 0.1f, 1.0f, 0.1f);
+
 	} else {
 		mouseParticle = NULL;
 	}
@@ -170,7 +175,6 @@ relates mouse movements to particle toy construction
 
 void mouse_interact(){
 	int i, j;
-	int size, flag;
 	float x, y;
 	//Return if 
 	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
@@ -187,25 +191,13 @@ void mouse_interact(){
 	if ( mouse_down[0] && scenarioId == 1 ) {
 		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
 	}
-	if ( mouse_down[0] && scenarioId == 3 ) {
-		//get closest particle to mouse
-		float dist = 10000.0f;
-		for (Particle* p: pVector) {
-			float new_dist = sqrt(pow(p->m_Position[0] - x, 2) + pow(p->m_Position[1] - y, 2));
-			if (new_dist < dist) {
-				dist = new_dist;
-				mouseParticle = p;
-			}
+	if ( mouse_down[0] && scenarioId == 4 ) {
 		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
-		}
-	}
-	// if ( mouse_rel ease[0] && scenarioId == 1 ) {
-	// 	mouseParticle->reset();
-	// 	printf("%d", mouseParticle->m_Position[0]);
-	// }
-	//printf("mouse position is %d,%d", x,y);
-	//printf("partcile position is %d,%d", mouseParticle->m_Position[0], mouseParticle->m_Position[1]);
 
+	}
+	if (mouse_release[0] && scenarioId == 4) {
+		mouse_release[0] = 0;
+	}
 }
 static void get_from_UI ()
 {
@@ -235,7 +227,7 @@ static void get_from_UI ()
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
-		//mouse_release[0] = 0;
+		mouse_release[0] = 0;
 	}
 
 	omx = mx;
@@ -313,6 +305,7 @@ static void mouse_func ( int button, int state, int x, int y )
 	if(mouse_down[button]) mouse_shiftclick[button] = glutGetModifiers()==GLUT_ACTIVE_SHIFT;
 	mouse_down[button] = state == GLUT_DOWN;
 	//printf("%d\n", mouse_down[button]);
+
 }
 
 static void motion_func ( int x, int y )
@@ -333,7 +326,7 @@ static void reshape_func ( int width, int height )
 static void idle_func ( void )
 {
 	if ( dsim ) {
-		mouse_interact();
+		
 	} else {
 		get_from_UI(); //remap_GUI();
 	}
@@ -345,6 +338,7 @@ static void idle_func ( void )
 static void update_func(int state) {
 	if (dsim) {
 		simulation_step( pVector, fVector, cVector, dt, scheme);
+		mouse_interact();
 		update_number++;
 
 		//std::cout << "Update: " << update_number << "\r" << std::flush;
