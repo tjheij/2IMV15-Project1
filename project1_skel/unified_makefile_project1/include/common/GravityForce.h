@@ -10,7 +10,7 @@ class GravityForce : public Force {
   GravityForce(Particle *p);
 
   void apply_force();
-
+  void add_jacobians(SparseMatrix *dfdx, SparseMatrix *dfdv);
   void draw();
 
  private:

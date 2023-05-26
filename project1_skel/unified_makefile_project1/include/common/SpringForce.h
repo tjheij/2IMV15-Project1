@@ -8,7 +8,7 @@ class SpringForce : public Force {
   SpringForce(Particle *p1, Particle * p2, double dist, double ks, double kd);
 
   void apply_force();
-
+  void add_jacobians(SparseMatrix *dfdx, SparseMatrix *dfdv);
   void draw();
 
  private:

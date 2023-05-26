@@ -1,8 +1,8 @@
 #include "Particle.h"
 #include <GL/glut.h>
 
-Particle::Particle(const Vec2f &ConstructPos, float Mass) :
-	m_ConstructPos(ConstructPos), m_Position(ConstructPos), m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(Mass)
+Particle::Particle(std::size_t Index, const Vec2f &ConstructPos, float Mass) :
+	m_Index(Index), m_ConstructPos(ConstructPos), m_Position(ConstructPos), m_Velocity(Vec2f(0.0, 0.0)), m_Force(Vec2f(0.0, 0.0)), m_Mass(Mass)
 {
 }
 
