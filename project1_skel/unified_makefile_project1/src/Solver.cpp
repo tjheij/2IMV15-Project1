@@ -1,6 +1,7 @@
 #include "Particle.h"
 #include "Force.h"
 #include "Constraint.h"
+#include "CollisionLine.h"
 #include <vector>
 
 #define ks_constraints 100.0f
@@ -79,26 +80,48 @@ void calculate_constraint_forces(std::vector<Particle*> &pVector, std::vector<Co
 	}
 }
 
-void eulerExplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
-	clear_forces(pVector);
-	calculate_forces(fVector);
-	calculate_constraint_forces(pVector, cVector);
+void handleCollisions(std::vector<Particle*> &pVector, std::vector<CollisionLine*> &collisionVector)
+{
 	for(Particle* p : pVector) {
-		p->m_Position += dt*p->m_Velocity;
-		p->m_Velocity += dt*p->m_Force / p->m_Mass; 
+		for(CollisionLine* c : collisionVector) {
+			c->collisionWith(p);
+		}
 	}
 }
 
-void eulerSemiImplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
+void handleCollisionForces(std::vector<Particle*> &pVector, std::vector<CollisionLine*> &collisionVector)
+{
+	for(Particle* p : pVector) {
+		for(CollisionLine* c : collisionVector) {
+			c->collisionForceWith(p);
+		}
+	}
+}
+
+void eulerExplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt) {
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
+	for(Particle* p : pVector) {
+		p->m_Position += dt*p->m_Velocity;
+		p->m_Velocity += dt*p->m_Force / p->m_Mass; 
+	}
+	handleCollisions(pVector, collisionVector);
+}
+
+void eulerSemiImplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt) {
+	clear_forces(pVector);
+	calculate_forces(fVector);
+	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 	for(Particle* p : pVector) {
 		p->m_Velocity += dt*p->m_Force / p->m_Mass; 
 		p->m_Position += dt*p->m_Velocity;
 	}
+	handleCollisions(pVector, collisionVector);
 }
-void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
+void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt) {
 	
 	std::vector<Vec2f> start_positions = std::vector<Vec2f>();
 	std::vector<Vec2f> start_velocities = std::vector<Vec2f>();
@@ -113,6 +136,7 @@ void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 	//do first order midpoint step
 	for(Particle* p : pVector) {
 		p->m_Velocity += dt * (p->m_Force / p->m_Mass);
@@ -122,15 +146,17 @@ void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 
 	//do second order midpoint step
 	for(int i = 0; i < pVector.size(); i++) {
 		pVector[i]->m_Velocity = start_velocities[i] + dt * (pVector[i]->m_Force / pVector[i]->m_Mass);
 		pVector[i]->m_Position = start_positions[i] + dt * pVector[i]->m_Velocity;
 	}
+	handleCollisions(pVector, collisionVector);
 }
 
-void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt) {
+void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt) {
 	
 	std::vector<Vec2f> start_positions = std::vector<Vec2f>();
 	std::vector<Vec2f> start_velocities = std::vector<Vec2f>();
@@ -160,6 +186,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 
 	//do first order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -173,6 +200,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 
 	//do second order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -186,6 +214,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 
 	//do third order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -198,6 +227,7 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	clear_forces(pVector);
 	calculate_forces(fVector);
 	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
 
 	//do fourth order runge kutta step
 	for (int i = 0; i < pVector.size(); i++) {
@@ -207,21 +237,21 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 		pVector[i]->m_Velocity = start_velocities[i] + (1.0f / 6.0f) * (k1[i] + 2.0f * k2[i] + 2.0f * k3[i] + k4[i]);
 		pVector[i]->m_Position = start_positions[i] + (1.0f / 6.0f) * (v1[i] + 2.0f * v2[i] + 2.0f * v3[i] + v4[i]);
 	}
-
+	handleCollisions(pVector, collisionVector);
 }
 
 
-void simulation_step(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt, int scheme) {
+void simulation_step(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt, int scheme) {
 	switch (scheme) {
 		case 0:
 		default:
-			eulerSemiImplicit(pVector, fVector, cVector, dt);
+			eulerSemiImplicit(pVector, fVector, cVector, collisionVector, dt);
 			break;
 		case 1: 
-			midpoint(pVector, fVector, cVector, dt);
+			midpoint(pVector, fVector, cVector, collisionVector, dt);
 			break;
 		case 2:
-			rungeKutta(pVector, fVector, cVector, dt);
+			rungeKutta(pVector, fVector, cVector, collisionVector, dt);
 			break;
 	}
 }
