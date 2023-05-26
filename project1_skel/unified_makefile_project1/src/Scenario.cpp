@@ -8,6 +8,7 @@
 #include "LineConstraint.h"
 #include "Constraint.h"
 #include "Cloth.h"
+#include "CollisionLine.h"
 #include <iostream>
 
 
@@ -22,7 +23,7 @@ void scenarioSpring(std::vector<Particle*> &particles, std::vector<Force*> &forc
 	forces.push_back(new SpringForce(particles[0], particles[1], restDist, 1.f, 0.1f));
 }
 
-void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &forces) {
+void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<CollisionLine*> &colliders) {
     const double dist = 0.2;
 	const Vec2f center(0.0, 0.0);
 	const Vec2f offset(dist, 0.0);
@@ -39,6 +40,8 @@ void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &for
 		GravityForce* gravity = new GravityForce(p);
         forces.push_back(gravity);
 	}
+
+	colliders.push_back(new CollisionLine(Vec2f(0.0,-0.8), Vec2f(0.0,1.0), 0.01f));
 }
 
 void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints) {
@@ -68,10 +71,10 @@ void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &force
 	cloth->init(particles, forces, constraints, type);
 }
 
-void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId) {
+void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, std::vector<CollisionLine*> &colliders, int scenarioId) {
     switch (scenarioId) {
         case 0:
-            scenarioGravity(particles, forces);
+            scenarioGravity(particles, forces, colliders);
 			break;
 		case 1:
 			scenarioSpring(particles, forces);

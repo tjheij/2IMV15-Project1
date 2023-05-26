@@ -5,6 +5,7 @@
 #include "SpringForce.h"
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
+#include "CollisionLine.h"
 #include "imageio.h"
 
 #include <vector>
@@ -16,8 +17,8 @@
 /* macros */
 
 /* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, float dt, int scheme);
-extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int scenarioId);
+extern void simulation_step( std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt, int scheme);
+extern void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, std::vector<CollisionLine*> &colliders, int scenarioId);
 
 /* global variables */
 static int scenarioId;
@@ -33,6 +34,7 @@ static int update_number;
 static std::vector<Particle*> pVector;
 static std::vector<Force*> fVector;
 static std::vector<Constraint*> cVector;
+static std::vector<CollisionLine*> collisionVector;
 
 static int win_id;
 static int win_x, win_y;
@@ -70,9 +72,16 @@ static void free_data ( void )
 		}
 	}
 
+	for (CollisionLine *c : collisionVector) {
+		if (c) {
+			delete c;
+		}
+	}
+
 	pVector.clear();
 	fVector.clear();
 	cVector.clear();
+	collisionVector.clear();
 }
 
 static void clear_data ( void )
@@ -86,7 +95,7 @@ static void clear_data ( void )
 
 static void init_system(void)
 {
-	initScenario(pVector, fVector, cVector, scenarioId);
+	initScenario(pVector, fVector, cVector, collisionVector, scenarioId);
 	if (scenarioId == 1) {
 		mouseParticle = pVector[1];
 		//pVector.push_back(mouseParticle);
@@ -160,6 +169,14 @@ static void draw_forces ( void )
 static void draw_constraints ( void )
 {
 	for(Constraint *c : cVector)
+	{
+		c->draw();
+	}
+}
+
+static void draw_colliders ( void )
+{
+	for(CollisionLine *c : collisionVector)
 	{
 		c->draw();
 	}
@@ -337,7 +354,7 @@ static void idle_func ( void )
 
 static void update_func(int state) {
 	if (dsim) {
-		simulation_step( pVector, fVector, cVector, dt, scheme);
+		simulation_step( pVector, fVector, cVector, collisionVector, dt, scheme);
 		mouse_interact();
 		update_number++;
 
@@ -354,6 +371,7 @@ static void display_func ( void )
 	draw_forces();
 	draw_constraints();
 	draw_particles();
+	draw_colliders();
 
 	post_display ();
 }
