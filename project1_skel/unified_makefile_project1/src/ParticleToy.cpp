@@ -100,7 +100,7 @@ static void init_system(void)
 		mouseParticle = pVector[1];
 		//pVector.push_back(mouseParticle);
 	} else if (scenarioId == 4) {
-		mouseParticle = pVector[pVector.size()-1];
+		mouseParticle = pVector[pVector.size()/2];
 		//mouseSpring = new SpringForce(pVector[0], mouseParticle, 0.1f, 1.0f, 0.1f);
 
 	} else {
@@ -206,7 +206,7 @@ void mouse_interact(){
 	y = ((float) j / N)-0.5f;
 
 	if ( mouse_down[0] && scenarioId == 1 ) {
-		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
+		mouseParticle->set_state(Vec2f(mx,my),Vec2f(0,0));
 	}
 	if ( mouse_down[0] && scenarioId == 4 ) {
 		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
@@ -294,19 +294,50 @@ static void key_func ( unsigned char key, int x, int y )
 		case 'e':
 		case 'E':
 			scheme = 0;
+			printf("Euler\n");
 			break;
 		case 'm':
 		case 'M':
 			scheme = 1;
+			printf("Midpoint\n");
 			break;
 		case 'r':
 		case 'R':
 			scheme = 2;
+			printf("RungeKutta\n");
+			break;
+		case 'v':
+		case 'V':
+			scheme = 3;
+			printf("Verlet\n");
 			break;
 		case ' ':
 			dsim = !dsim;
 			break;
 		}
+	}
+}
+
+static void special_key_func(int key, int x, int y)
+{
+	switch(key)
+	{
+		case GLUT_KEY_UP:
+			dt += 0.005f;
+			printf("dt = %f\n", dt);
+			break;
+		case GLUT_KEY_DOWN:
+			if (dt > 0.005f) {
+				dt -= 0.005f;
+				printf("dt = %f\n", dt);
+			}
+			break;
+		case GLUT_KEY_LEFT:
+			// printf("left\n");
+			break;
+		case GLUT_KEY_RIGHT:
+			// printf("right\n");
+			break;
 	}
 }
 
@@ -408,6 +439,7 @@ static void open_glut_window ( void )
 	glutReshapeFunc ( reshape_func );
 	glutIdleFunc ( idle_func );
 	glutDisplayFunc ( display_func );
+	glutSpecialFunc ( special_key_func);
 
 	glutTimerFunc((int)(1000.f * dt), update_func, 0);
 }

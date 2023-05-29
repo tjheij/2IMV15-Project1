@@ -240,6 +240,29 @@ void rungeKutta(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, s
 	handleCollisions(pVector, collisionVector);
 }
 
+void verlet(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt) {
+	std::vector<Vec2f> start_positions = std::vector<Vec2f>();
+	std::vector<Vec2f> start_velocities = std::vector<Vec2f>();
+	
+	//add start positions and velocities to vectors
+	for (Particle* p : pVector) {
+		start_positions.push_back(p->m_Position);
+		start_velocities.push_back(p->m_Velocity);
+	}
+
+	clear_forces(pVector);
+	calculate_forces(fVector);
+	calculate_constraint_forces(pVector, cVector);
+	handleCollisionForces(pVector, collisionVector);
+
+	//do verlet step
+	for (int i = 0; i < pVector.size(); i++) {
+		pVector[i]->m_Position = start_positions[i] + dt * pVector[i]->m_Velocity + (dt * dt / pVector[i]->m_Mass) * pVector[i]->m_Force;
+		pVector[i]->m_Velocity = (pVector[i]->m_Position - start_positions[i]) / dt;
+	}
+	handleCollisions(pVector, collisionVector);
+}
+
 
 void simulation_step(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::vector<Constraint*> &cVector, std::vector<CollisionLine*> &collisionVector, float dt, int scheme) {
 	switch (scheme) {
@@ -252,6 +275,9 @@ void simulation_step(std::vector<Particle*> &pVector, std::vector<Force*> &fVect
 			break;
 		case 2:
 			rungeKutta(pVector, fVector, cVector, collisionVector, dt);
+			break;
+		case 3:
+			verlet(pVector, fVector, cVector, collisionVector, dt);
 			break;
 	}
 }

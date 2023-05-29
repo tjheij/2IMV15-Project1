@@ -67,7 +67,7 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 }
 
 void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int type) {
-	Cloth* cloth = new Cloth(10, 10, particles, forces, constraints);
+	Cloth* cloth = new Cloth(9, 9, particles, forces, constraints);
 	cloth->init(particles, forces, constraints, type);
 }
 

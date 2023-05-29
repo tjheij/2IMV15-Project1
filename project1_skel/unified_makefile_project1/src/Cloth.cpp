@@ -5,8 +5,8 @@
 #include "CircularWireConstraint.h"
 #include "LineConstraint.h"
 
-#define ks_constraints 100.0f
-#define kd_constraints 1.0f
+#define ks_constraints 500.0f
+#define kd_constraints 5.f
 
 Cloth::Cloth(int x, int y, std::vector<Particle *> &pVector, std::vector<Force *> &fVector,
               std::vector<Constraint *> &cVector) : width(x), height(y), pVector(pVector), fVector(fVector),
@@ -104,12 +104,14 @@ void Cloth::flexion_spring(std::vector<Particle *> &pVector, std::vector<Force *
 void Cloth::constraints(std::vector<Particle *> &pVector, std::vector<Constraint *> &cVector, int type)
 {
     if (type == 1) {
-        for (int i = 0; i < pVector.size(); i++) {
+        int j = 0;
+        for (int i = 0; i < pVector.size(); i+=height) {
             //line constraint for top row
-            if (i % height == 0) {
+            if (j % 2 == 0) {
                 Constraint *c = new LineConstraint(pVector[i], i, 0.0f, 0.5f, 1.0f);
                 cVector.push_back(c);
             }
+            j++;
         }
     } else {
         //constraint force for the top left corner
