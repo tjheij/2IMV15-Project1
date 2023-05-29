@@ -303,6 +303,14 @@ static void key_func ( unsigned char key, int x, int y )
 		case 'R':
 			scheme = 2;
 			break;
+		case 'i':
+		case 'I':
+			scheme = 3;
+			break;
+		case 'j':
+		case 'J':
+			scheme = 4;
+			break;
 		case ' ':
 			dsim = !dsim;
 			break;
@@ -426,6 +434,7 @@ int main ( int argc, char ** argv )
 	if ( argc == 1 ) {
 		N = 64;
 		dt = 0.025f;
+		//dt = 0.1f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );

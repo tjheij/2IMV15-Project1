@@ -8,6 +8,7 @@
 #include "LineConstraint.h"
 #include "Constraint.h"
 #include "Cloth.h"
+#include "ClothImplicit.h"
 #include "CollisionLine.h"
 #include <iostream>
 
@@ -71,6 +72,11 @@ void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &force
 	cloth->init(particles, forces, constraints, type);
 }
 
+void scenarioClothImplicit(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int type) {
+	ClothImplicit* cloth = new ClothImplicit(20, 20, particles, forces, constraints);
+	cloth->init(particles, forces, constraints, type);
+}
+
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, std::vector<CollisionLine*> &colliders, int scenarioId) {
     switch (scenarioId) {
         case 0:
@@ -87,5 +93,9 @@ void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces
 			break;
 		case 4:
 			scenarioCloth(particles, forces, constraints, 1);
+			break;
+		case 5:
+			scenarioClothImplicit(particles, forces, constraints, 0);
+			break;
     }
 }

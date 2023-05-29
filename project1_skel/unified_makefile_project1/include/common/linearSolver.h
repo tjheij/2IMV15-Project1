@@ -62,6 +62,7 @@ public:
 
     double get(std::size_t i, std::size_t j);
     void set(std::size_t i, std::size_t j, double value);
+    void add(std::size_t i, std::size_t j, double value);
 
     SparseMatrix(std::size_t N);
     SparseMatrix(std::size_t num_rows, std::size_t num_columns);

@@ -3,7 +3,7 @@
 #include "Force.h"
 #include "Particle.h"
 
-#define G 1.0f
+#define G 0.1f
 
 class GravityForce : public Force {
  public:

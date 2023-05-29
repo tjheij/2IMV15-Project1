@@ -30,6 +30,10 @@ void SparseMatrix::set(std::size_t i, std::size_t j, double value) {
     }
 }
 
+void SparseMatrix::add(std::size_t i, std::size_t j, double value) {
+    set(i, j, get(i, j) + value);
+}
+
 SparseMatrix::SparseMatrix(std::size_t N) : m_num_rows(N), m_num_columns(N) {
     for (std::size_t i = 0; i < N; i++) {
         m_PerRow_ColumnIndices.push_back(std::set<std::size_t>());
