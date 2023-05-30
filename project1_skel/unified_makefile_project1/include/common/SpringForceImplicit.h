@@ -10,6 +10,7 @@ public:
 
     void apply_force();
     void compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix *dfdv);
+    void compute_matrix_blocks_2(SparseMatrix *dfdx, SparseMatrix *dfdv);
 
     Vec2f calc_force_1(Vec2f pos1, Vec2f vel1, Vec2f pos2, Vec2f vel2);
     Vec2f calc_force_2(Vec2f pos1, Vec2f vel1, Vec2f pos2, Vec2f vel2);

@@ -21,6 +21,8 @@ void calculate_forces( std::vector<Force*> &fVector) {
 }
 
 void calculate_implicit_forces(std::vector<Force*> &fVector, SparseMatrix *dfdx, SparseMatrix *dfdv) {
+	SparseMatrix *dfdx2 = new SparseMatrix(dfdx->m_num_rows);
+
     for (Force* f : fVector) {
         if (SpringForceImplicit* ff = dynamic_cast<SpringForceImplicit*>(f)) {
             ff->compute_matrix_blocks(dfdx, dfdv);
@@ -178,7 +180,7 @@ void eulerImplicit(std::vector<Particle*> &pVector, std::vector<Force*> &fVector
 	calculate_forces(fVector);
 	calculate_implicit_forces(fVector, dfdx, dfdv);
 	calculate_constraint_forces(pVector, cVector);
-	//handleCollisionForces(pVector, collisionVector);
+	handleCollisionForces(pVector, collisionVector);
 
     calculate_implicit_equation(pVector, fVector, dfdx, dfdv, dt, A, b);
     ConjGrad(2 * pVector.size(), A, v, b, 0.001, &steps);
