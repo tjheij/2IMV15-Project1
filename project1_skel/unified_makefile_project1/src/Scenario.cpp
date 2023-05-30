@@ -79,20 +79,54 @@ void scenarioClothImplicit(std::vector<Particle*> &particles, std::vector<Force*
 }
 
 void scenarioAngularSpring(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints) {
-    const float restAngle = 2;
-	const float restLength = 0.1;
+	const double restAngle = 3.1415 - 0.3;
+	const double hairSegmentLength = 0.1;
+	const double totalHairLength = 1.5;
+	const double randFac = 0.01;
+
+	const double ks = 0.1;
+	const double kd = 0.1;
+
+	const int hairCount = 25;
+	const double hairAngleStart = -0.3;
+	const double hairAngleStop = 0.3;
     
-	const Vec2f p1(0.1, 0.0);
-    const Vec2f p2(0.0, 0.0);
-    const Vec2f p3(0.0, 0.1);
-	particles.push_back(new Particle(p1, 1.f));
-	particles.push_back(new Particle(p2, 1.f));
-	particles.push_back(new Particle(p3, 1.f));
+	std::size_t i = 0;
 
-	constraints.push_back(new RodConstraint(particles[0], 0, particles[1], 1, 0.1));
-	constraints.push_back(new RodConstraint(particles[2], 2, particles[1], 1, 0.1));
+	for (int hairIndex = 0; hairIndex < hairCount; hairIndex++) {
+		double hairAngle = hairAngleStart + (hairAngleStop - hairAngleStart) / (double)hairCount * (double)hairIndex;
+		std::size_t localIndex = 0;
 
-	forces.push_back(new AngularSpringForce(particles[0], particles[1], particles[2], restAngle, 0.1f, 0.1f));
+		Vec2f originStrand(hairAngle, 0.75);
+
+		for (double offset = 0; offset >= -totalHairLength; offset -= hairSegmentLength) {
+			if (localIndex == 0) {
+				particles.push_back(new Particle(originStrand, 1.0));
+				constraints.push_back(new LineConstraint(particles[i], i, 0.0, 0.75, 1.0));
+			
+			} else {
+				double dx = ((double) rand() / (RAND_MAX));
+				double dy = ((double) rand() / (RAND_MAX));
+				particles.push_back(new Particle(originStrand + Vec2f(0 + randFac * dx, offset + randFac * dy), 1.0));
+				forces.push_back(new GravityForce(particles[i]));
+			}
+
+
+			if (localIndex >= 1) {
+				constraints.push_back(new RodConstraint(particles[i-1], i-1, particles[i], i, norm(particles[i-1]->m_Position - particles[i]->m_Position)));
+			}
+
+			if (localIndex >= 2) {
+				forces.push_back(new AngularSpringForce(particles[i-2], particles[i-1], particles[i], restAngle, ks, kd));
+			}
+
+			i++;
+			localIndex++;
+		}
+
+	}
+	
+	
 }
 
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, std::vector<CollisionLine*> &colliders, int scenarioId) {
