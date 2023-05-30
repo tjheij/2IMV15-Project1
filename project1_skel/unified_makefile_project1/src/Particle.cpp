@@ -23,7 +23,7 @@ void Particle::set_state(Vec2f pos, Vec2f vel)
 
 void Particle::draw()
 {
-	const double h = 0.03;
+	const double h = 0.02;
 	glColor3f(1.f, 1.f, 1.f); 
 	glBegin(GL_QUADS);
 	glVertex2f(m_Position[0]-h/2.0, m_Position[1]-h/2.0);
