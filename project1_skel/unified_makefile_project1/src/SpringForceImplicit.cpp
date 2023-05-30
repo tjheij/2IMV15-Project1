@@ -22,7 +22,7 @@ void SpringForceImplicit::apply_force() {
     m_p2->m_Force += f2;
 }
 
-/**
+
 void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix *dfdv) {
     std::size_t p1 = m_p1_index;
     std::size_t p2 = m_p2_index;
@@ -32,6 +32,7 @@ void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix
 
     double norm_dx = norm(delta_x);
     double norm_dx3 = norm_dx * norm_dx * norm_dx;
+    double dot_dvdx = delta_v[0] * delta_x[0] + delta_v[1] * delta_x[1];
 
     double dfdx00 = 0.0;
     double dfdx01 = 0.0;
@@ -47,20 +48,20 @@ void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix
     double kd = m_kd;
 
     {
-        double alpha = m_ks * (norm_dx - m_dist) + m_kd * (delta_v * delta_x) / norm_dx;
+        double alpha = ks * (norm_dx - m_dist) + kd * dot_dvdx / norm_dx;
 
-        double dv_d00 = (1 / norm_dx - delta_x[0] * delta_x[0]) / norm_dx3;
-        double dv_d01 = (1 / norm_dx - delta_x[1] * delta_x[1]) / norm_dx3;
-        double dv_d10 = -((delta_x[0] * delta_x[1]) / norm_dx3);
-        double dv_d11 = dv_d10;
+        double dv_d00 = 1 / norm_dx - delta_x[0] * delta_x[0] / norm_dx3;
+        double dv_d11 = 1 / norm_dx - delta_x[1] * delta_x[1] / norm_dx3;
+        double dv_d01 = -((delta_x[0] * delta_x[1]) / norm_dx3);
+        double dv_d10 = dv_d01;
 
         double da0_d00 = ks * delta_x[0] / norm_dx;
         double da0_d01 = ks * delta_x[1] / norm_dx;
         double da0_d10 = da0_d00;
         double da0_d11 = da0_d01;
 
-        double da1_d00 = kd * (delta_v[0] / norm_dx - delta_x[0] * (delta_v * delta_x) / norm_dx3);
-        double da1_d01 = kd * (delta_v[1] / norm_dx - delta_x[0] * (delta_v * delta_x) / norm_dx3);
+        double da1_d00 = kd * (delta_v[0] / norm_dx - delta_x[0] * dot_dvdx / norm_dx3);
+        double da1_d01 = kd * (delta_v[1] / norm_dx - delta_x[1] * dot_dvdx / norm_dx3);
         double da1_d10 = da1_d00;
         double da1_d11 = da1_d01;
 
@@ -71,8 +72,8 @@ void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix
     }
 
     {
-        double da_d00 = m_kd * delta_x[0] / norm_dx;
-        double da_d01 = m_kd * delta_x[1] / norm_dx;
+        double da_d00 = kd * delta_x[0] / norm_dx;
+        double da_d01 = kd * delta_x[1] / norm_dx;
         double da_d10 = da_d00;
         double da_d11 = da_d01;
 
@@ -82,48 +83,48 @@ void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix
         dfdv11 = delta_x[1] / norm_dx * da_d11;
     }
 
-    dfdx->add(p1 * 2 + 0, p1 * 2 + 0, dfdx00);
-    dfdx->add(p1 * 2 + 0, p1 * 2 + 1, dfdx01);
-    dfdx->add(p1 * 2 + 1, p1 * 2 + 0, dfdx10);
-    dfdx->add(p1 * 2 + 1, p1 * 2 + 1, dfdx11);
+    dfdx->add(p1 * 2 + 0, p1 * 2 + 0, -dfdx00);
+    dfdx->add(p1 * 2 + 0, p1 * 2 + 1, -dfdx01);
+    dfdx->add(p1 * 2 + 1, p1 * 2 + 0, -dfdx10);
+    dfdx->add(p1 * 2 + 1, p1 * 2 + 1, -dfdx11);
 
-    dfdv->add(p1 * 2 + 0, p1 * 2 + 0, dfdv00);
-    dfdv->add(p1 * 2 + 0, p1 * 2 + 1, dfdv01);
-    dfdv->add(p1 * 2 + 1, p1 * 2 + 0, dfdv10);
-    dfdv->add(p1 * 2 + 1, p1 * 2 + 1, dfdv11);
+    dfdv->add(p1 * 2 + 0, p1 * 2 + 0, -dfdv00);
+    dfdv->add(p1 * 2 + 0, p1 * 2 + 1, -dfdv01);
+    dfdv->add(p1 * 2 + 1, p1 * 2 + 0, -dfdv10);
+    dfdv->add(p1 * 2 + 1, p1 * 2 + 1, -dfdv11);
 
-    dfdx->add(p1 * 2 + 0, p2 * 2 + 0, -dfdx00);
-    dfdx->add(p1 * 2 + 0, p2 * 2 + 1, -dfdx01);
-    dfdx->add(p1 * 2 + 1, p2 * 2 + 0, -dfdx10);
-    dfdx->add(p1 * 2 + 1, p2 * 2 + 1, -dfdx11);
+    dfdx->add(p1 * 2 + 0, p2 * 2 + 0, dfdx00);
+    dfdx->add(p1 * 2 + 0, p2 * 2 + 1, dfdx01);
+    dfdx->add(p1 * 2 + 1, p2 * 2 + 0, dfdx10);
+    dfdx->add(p1 * 2 + 1, p2 * 2 + 1, dfdx11);
 
-    dfdv->add(p1 * 2 + 0, p2 * 2 + 0, -dfdv00);
-    dfdv->add(p1 * 2 + 0, p2 * 2 + 1, -dfdv01);
-    dfdv->add(p1 * 2 + 1, p2 * 2 + 0, -dfdv10);
-    dfdv->add(p1 * 2 + 1, p2 * 2 + 1, -dfdv11);
+    dfdv->add(p1 * 2 + 0, p2 * 2 + 0, dfdv00);
+    dfdv->add(p1 * 2 + 0, p2 * 2 + 1, dfdv01);
+    dfdv->add(p1 * 2 + 1, p2 * 2 + 0, dfdv10);
+    dfdv->add(p1 * 2 + 1, p2 * 2 + 1, dfdv11);
     
 
-    dfdx->add(p2 * 2 + 0, p1 * 2 + 0, -dfdx00);
-    dfdx->add(p2 * 2 + 0, p1 * 2 + 1, -dfdx01);
-    dfdx->add(p2 * 2 + 1, p1 * 2 + 0, -dfdx10);
-    dfdx->add(p2 * 2 + 1, p1 * 2 + 1, -dfdx11);
+    dfdx->add(p2 * 2 + 0, p1 * 2 + 0, dfdx00);
+    dfdx->add(p2 * 2 + 0, p1 * 2 + 1, dfdx01);
+    dfdx->add(p2 * 2 + 1, p1 * 2 + 0, dfdx10);
+    dfdx->add(p2 * 2 + 1, p1 * 2 + 1, dfdx11);
 
-    dfdv->add(p2 * 2 + 0, p1 * 2 + 0, -dfdv00);
-    dfdv->add(p2 * 2 + 0, p1 * 2 + 1, -dfdv01);
-    dfdv->add(p2 * 2 + 1, p1 * 2 + 0, -dfdv10);
-    dfdv->add(p2 * 2 + 1, p1 * 2 + 1, -dfdv11);
+    dfdv->add(p2 * 2 + 0, p1 * 2 + 0, dfdv00);
+    dfdv->add(p2 * 2 + 0, p1 * 2 + 1, dfdv01);
+    dfdv->add(p2 * 2 + 1, p1 * 2 + 0, dfdv10);
+    dfdv->add(p2 * 2 + 1, p1 * 2 + 1, dfdv11);
     
 
-    dfdx->add(p2 * 2 + 0, p2 * 2 + 0, dfdx00);
-    dfdx->add(p2 * 2 + 0, p2 * 2 + 1, dfdx01);
-    dfdx->add(p2 * 2 + 1, p2 * 2 + 0, dfdx10);
-    dfdx->add(p2 * 2 + 1, p2 * 2 + 1, dfdx11);
+    dfdx->add(p2 * 2 + 0, p2 * 2 + 0, -dfdx00);
+    dfdx->add(p2 * 2 + 0, p2 * 2 + 1, -dfdx01);
+    dfdx->add(p2 * 2 + 1, p2 * 2 + 0, -dfdx10);
+    dfdx->add(p2 * 2 + 1, p2 * 2 + 1, -dfdx11);
 
-    dfdv->add(p2 * 2 + 0, p2 * 2 + 0, dfdv00);
-    dfdv->add(p2 * 2 + 0, p2 * 2 + 1, dfdv01);
-    dfdv->add(p2 * 2 + 1, p2 * 2 + 0, dfdv10);
-    dfdv->add(p2 * 2 + 1, p2 * 2 + 1, dfdv11);
-}*/
+    dfdv->add(p2 * 2 + 0, p2 * 2 + 0, -dfdv00);
+    dfdv->add(p2 * 2 + 0, p2 * 2 + 1, -dfdv01);
+    dfdv->add(p2 * 2 + 1, p2 * 2 + 0, -dfdv10);
+    dfdv->add(p2 * 2 + 1, p2 * 2 + 1, -dfdv11);
+}
 
 Vec2f SpringForceImplicit::calc_force_1(Vec2f pos1, Vec2f vel1, Vec2f pos2, Vec2f vel2) {
     Vec2f delta_x = pos1 - pos2;
@@ -155,7 +156,7 @@ Vec2f SpringForceImplicit::calc_force_2(Vec2f pos1, Vec2f vel1, Vec2f pos2, Vec2
     return f2;
 }
 
-void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix *dfdv) {
+void SpringForceImplicit::compute_matrix_blocks_2(SparseMatrix *dfdx, SparseMatrix *dfdv) {
     std::size_t p1 = m_p1_index;
     std::size_t p2 = m_p2_index;
 
@@ -167,7 +168,7 @@ void SpringForceImplicit::compute_matrix_blocks(SparseMatrix *dfdx, SparseMatrix
     Vec2f f0_1 = calc_force_1(pos1, vel1, pos2, vel2);
     Vec2f f0_2 = calc_force_2(pos1, vel1, pos2, vel2);
 
-    double dh = 0.01;
+    double dh = 0.000001;
     Vec2f h1 = Vec2f(dh, 0);
     Vec2f h2 = Vec2f(0, dh);
 

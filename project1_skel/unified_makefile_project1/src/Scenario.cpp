@@ -2,6 +2,7 @@
 #include "Particle.h"
 #include "GravityForce.h"
 #include "SpringForce.h"
+#include "AngularSpringForce.h"
 #include "Force.h"
 #include "CircularWireConstraint.h"
 #include "RodConstraint.h"
@@ -81,6 +82,23 @@ void scenarioClothImplicit(std::vector<Particle*> &particles, std::vector<Force*
 	cloth->init(particles, forces, constraints, type);
 }
 
+void scenarioAngularSpring(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints) {
+    const float restAngle = 2;
+	const float restLength = 0.1;
+    
+	const Vec2f p1(0.1, 0.0);
+    const Vec2f p2(0.0, 0.0);
+    const Vec2f p3(0.0, 0.1);
+	particles.push_back(new Particle(p1, 1.f));
+	particles.push_back(new Particle(p2, 1.f));
+	particles.push_back(new Particle(p3, 1.f));
+
+	constraints.push_back(new RodConstraint(particles[0], 0, particles[1], 1, 0.1));
+	constraints.push_back(new RodConstraint(particles[2], 2, particles[1], 1, 0.1));
+
+	forces.push_back(new AngularSpringForce(particles[0], particles[1], particles[2], restAngle, 0.1f, 0.1f));
+}
+
 void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, std::vector<CollisionLine*> &colliders, int scenarioId) {
     switch (scenarioId) {
         case 0:
@@ -100,6 +118,9 @@ void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces
 			break;
 		case 5:
 			scenarioClothImplicit(particles, forces, constraints, 0);
+			break;
+		case 6:
+			scenarioAngularSpring(particles, forces, constraints);
 			break;
     }
 }
