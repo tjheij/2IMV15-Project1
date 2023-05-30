@@ -206,11 +206,12 @@ void mouse_interact(){
 	y = ((float) j / N)-0.5f;
 
 	if ( mouse_down[0] && scenarioId == 1 ) {
-		mouseParticle->set_state(Vec2f(mx,my),Vec2f(0,0));
+		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
+	}
+	if (mouse_down[0] && scenarioId == 3 && !cVector.empty()) {
 	}
 	if ( mouse_down[0] && scenarioId == 4 ) {
 		mouseParticle->set_state(Vec2f(x,y),Vec2f(0,0));
-
 	}
 	if (mouse_release[0] && scenarioId == 4) {
 		mouse_release[0] = 0;
@@ -273,6 +274,7 @@ static void key_func ( unsigned char key, int x, int y )
 		scenarioId = std::stoi(std::string() + ((char)key));
 		free_data();
 		init_system();
+		dt = 0.025f;
 	} catch (const std::invalid_argument &ex) {
 		switch ( key )
 		{
@@ -294,7 +296,7 @@ static void key_func ( unsigned char key, int x, int y )
 		case 'e':
 		case 'E':
 			scheme = 0;
-			printf("Euler\n");
+			printf("SemiImplicit Euler\n");
 			break;
 		case 'm':
 		case 'M':
@@ -306,9 +308,19 @@ static void key_func ( unsigned char key, int x, int y )
 			scheme = 2;
 			printf("RungeKutta\n");
 			break;
+		case 'i':
+		case 'I':
+			scheme = 3;
+			printf("Implicit Euler\n");
+			break;
+		case 'j':
+		case 'J':
+			scheme = 4;
+			printf("Explicit Euler\n");
+			break;
 		case 'v':
 		case 'V':
-			scheme = 3;
+			scheme = 5;
 			printf("Verlet\n");
 			break;
 		case ' ':
@@ -333,7 +345,6 @@ static void special_key_func(int key, int x, int y)
 			}
 			break;
 		case GLUT_KEY_LEFT:
-			// printf("left\n");
 			break;
 		case GLUT_KEY_RIGHT:
 			// printf("right\n");
@@ -458,6 +469,7 @@ int main ( int argc, char ** argv )
 	if ( argc == 1 ) {
 		N = 64;
 		dt = 0.025f;
+		//dt = 0.1f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );
@@ -469,8 +481,17 @@ int main ( int argc, char ** argv )
 
 	printf ( "\n\nHow to use this application:\n\n" );
 	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
-	printf ( "\t Press frames by pressing the 'd' key\n" );
-	printf ( "\t Dump frames by pressing the 'd' key\n" );
+	printf ( "\t Press 0 for gravity scenario\n" );
+	printf ( "\t Press 1 for spring with mouse interaction scenario\n" );
+	printf ( "\t Press 2 for constraints scenario\n" );
+	printf ( "\t Press 3 for cloth with circular constraints scenario\n" );
+	printf ( "\t Press 4 for cloth with mouse interaction scenario\n" );
+	printf ( "\t Press 'e' for semi-euler integration\n" );
+	printf ( "\t Press 'm' for midpoint integration\n" );
+	printf ( "\t Press 'r' for rungekutta integration\n" );
+	printf ( "\t Press 'v' for verlet integration\n" );
+	printf( "\t Press 'i' for implicit euler integration\n" );
+	printf( "\t Press 'j' for explicit euler integration\n" );
 	printf ( "\t Dump frames by pressing the 'd' key\n" );
 	printf ( "\t Quit by pressing the 'q' key\n" );
 

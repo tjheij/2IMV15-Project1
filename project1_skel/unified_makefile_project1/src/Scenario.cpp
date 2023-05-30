@@ -8,6 +8,7 @@
 #include "LineConstraint.h"
 #include "Constraint.h"
 #include "Cloth.h"
+#include "ClothImplicit.h"
 #include "CollisionLine.h"
 #include <iostream>
 
@@ -16,7 +17,7 @@ void scenarioSpring(std::vector<Particle*> &particles, std::vector<Force*> &forc
     const float restDist = 0.2f; 
     
 	const Vec2f center(0.0, 0.0);
-    const Vec2f offset(0.1,0.0);
+    const Vec2f offset(0.75,0.0);
 	particles.push_back(new Particle(center, 1.f));
 	particles.push_back(new Particle(center + offset, 1.f));
 
@@ -66,8 +67,13 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 	constraints.push_back(new LineConstraint(particles[2], 2, 0.0f, 0.3f, 1.0f));
 }
 
-void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int type) {
+void scenarioCloth(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int type, std::vector<CollisionLine*> &colliders	) {
 	Cloth* cloth = new Cloth(9, 9, particles, forces, constraints);
+	cloth->init(particles, forces, constraints, type, colliders);
+}
+
+void scenarioClothImplicit(std::vector<Particle*> &particles, std::vector<Force*> &forces, std::vector<Constraint*> &constraints, int type) {
+	ClothImplicit* cloth = new ClothImplicit(20, 20, particles, forces, constraints);
 	cloth->init(particles, forces, constraints, type);
 }
 
@@ -83,9 +89,13 @@ void initScenario(std::vector<Particle*> &particles, std::vector<Force*> &forces
 			scenarioConstraints(particles, forces, constraints);
 			break;	
 		case 3:
-			scenarioCloth(particles, forces, constraints, 0);
+			scenarioCloth(particles, forces, constraints, 0, colliders);
 			break;
 		case 4:
-			scenarioCloth(particles, forces, constraints, 1);
+			scenarioCloth(particles, forces, constraints, 1, colliders);
+			break;
+		case 5:
+			scenarioClothImplicit(particles, forces, constraints, 0);
+			break;
     }
 }
