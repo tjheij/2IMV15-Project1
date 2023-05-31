@@ -1,6 +1,7 @@
 #include <vector>
 #include "Particle.h"
 #include "GravityForce.h"
+#include "DragForce.h"
 #include "SpringForce.h"
 #include "AngularSpringForce.h"
 #include "Force.h"
@@ -39,8 +40,8 @@ void scenarioGravity(std::vector<Particle*> &particles, std::vector<Force*> &for
 
     //Add gravity
 	for(Particle* p : particles){
-		GravityForce* gravity = new GravityForce(p);
-        forces.push_back(gravity);
+        forces.push_back(new GravityForce(p));
+		forces.push_back(new DragForce(p));
 	}
 
 	colliders.push_back(new CollisionLine(Vec2f(0.0,-0.5), Vec2f(0.0,1.0), 0.015f));
@@ -60,10 +61,10 @@ void scenarioConstraints(std::vector<Particle*> &particles, std::vector<Force*> 
 	particles.push_back(new Particle(center + p_3_offset, 1.f));
 	particles.push_back(new Particle(center + p_4_offset, 2.f));
 
-    forces.push_back(new GravityForce(particles[0]));
-	forces.push_back(new GravityForce(particles[1]));
-	forces.push_back(new GravityForce(particles[2]));
-	forces.push_back(new GravityForce(particles[3]));
+    for(Particle* p : particles){
+        forces.push_back(new GravityForce(p));
+		forces.push_back(new DragForce(p));
+	}
 
 	constraints.push_back(new CircularWireConstraint(particles[0], 0, circle_1_offset, 0.25f));
 	constraints.push_back(new CircularWireConstraint(particles[1], 1, circle_2_offset, 0.1f));
@@ -113,6 +114,7 @@ void scenarioAngularSpring(std::vector<Particle*> &particles, std::vector<Force*
 				double dy = ((double) rand() / (RAND_MAX));
 				particles.push_back(new Particle(originStrand + Vec2f(0 + randFac * dx, offset + randFac * dy), 1.0));
 				forces.push_back(new GravityForce(particles[i]));
+				forces.push_back(new DragForce(particles[i]));
 			}
 
 

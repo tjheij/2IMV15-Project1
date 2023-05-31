@@ -210,7 +210,6 @@ void midpoint(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std
 		start_positions.push_back(p->m_Position);
 		start_velocities.push_back(p->m_Velocity);
 	}
-
 	
 	clear_forces(pVector);
 	calculate_forces(fVector);

@@ -6,6 +6,7 @@
 #include "RodConstraint.h"
 #include "Force.h"
 #include "GravityForce.h"
+#include "DragForce.h"
 #include "SpringForce.h"
 #include <math.h>
 

@@ -7,7 +7,6 @@ GravityForce::GravityForce(Particle *p) :
 void GravityForce::apply_force()
 {
   m_p->m_Force[1] -= m_p->m_Mass*G;
-  m_p->m_Force -= 0.4*m_p->m_Velocity;
 }
 
 void GravityForce::draw()
