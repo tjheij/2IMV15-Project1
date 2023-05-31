@@ -26,7 +26,6 @@ void ClothImplicit::init(std::vector<Particle*> &pVector, std::vector<Force*> &f
             //add gravity force to the bottom particles
             GravityForce *gf = new GravityForce(p);
             fVector.push_back(gf);
-            fVector.push_back(new DragForce(p));
         }
     }
     
