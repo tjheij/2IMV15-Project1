@@ -336,7 +336,13 @@ void verlet(std::vector<Particle*> &pVector, std::vector<Force*> &fVector, std::
 	//do verlet step
 	for (int i = 0; i < pVector.size(); i++) {
 		pVector[i]->m_Position = start_positions[i] + dt * pVector[i]->m_Velocity + 0.5* (dt * dt) * pVector[i]->m_Force/pVector[i]->m_Mass;
-		pVector[i]->m_Velocity = (pVector[i]->m_Position - start_positions[i]) / dt;
+		Vec2f prev_a = pVector[i]->m_Force / pVector[i]->m_Mass;
+		clear_forces(pVector);
+		calculate_forces(fVector);
+		calculate_constraint_forces(pVector, cVector);
+		handleCollisionForces(pVector, collisionVector);
+		pVector[i]->m_Velocity = start_velocities[i] + 0.5 * dt * ((pVector[i]->m_Force / pVector[i]->m_Mass) + prev_a);
+		//pVector[i]->m_Velocity = (pVector[i]->m_Position - start_positions[i]) / dt;
 	}
 	handleCollisions(pVector, collisionVector);
 }

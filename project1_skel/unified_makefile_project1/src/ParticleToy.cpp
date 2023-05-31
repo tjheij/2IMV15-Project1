@@ -486,6 +486,8 @@ int main ( int argc, char ** argv )
 	printf ( "\t Press 2 for constraints scenario\n" );
 	printf ( "\t Press 3 for cloth with circular constraints scenario\n" );
 	printf ( "\t Press 4 for cloth with mouse interaction scenario\n" );
+	printf ( "\t Press 5 for dense cloth with circular constraint\n" );
+	printf ( "\t Press 6 for hair simulation\n" );
 	printf ( "\t Press 'e' for semi-euler integration\n" );
 	printf ( "\t Press 'm' for midpoint integration\n" );
 	printf ( "\t Press 'r' for rungekutta integration\n" );
